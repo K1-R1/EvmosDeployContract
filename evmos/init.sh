@@ -1,4 +1,5 @@
 KEY="mykey"
+KEY2="mykey2"
 CHAINID="evmos_9000-1"
 MONIKER="localtestnet"
 KEYRING="test" # remember to change to other types of keyring like 'file' in-case exposing to outside world, otherwise your balance will be wiped quickly. The keyring test does not require private key to steal tokens from you
@@ -116,6 +117,8 @@ evmosd validate-genesis
 if [[ $1 == "pending" ]]; then
   echo "pending mode is on, please wait for the first block committed."
 fi
+
+evmosd keys add $KEY2 --keyring-backend $KEYRING --algo $KEYALGO
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
 evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3
