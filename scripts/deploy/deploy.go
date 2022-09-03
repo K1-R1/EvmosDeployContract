@@ -55,17 +55,17 @@ func main() {
 	}
 
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
+	auth.Value = big.NewInt(0)      // in wei
+	auth.GasLimit = uint64(3000000) // in units
 	auth.GasPrice = gasPrice
 
-	address, tx, instance, err := token.DeployToken(auth, client)
+	address, tx, _, err := token.DeployToken(auth, client)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(address.Hex())
-	fmt.Println(tx.Hash().Hex())
-
-	_ = instance
+	// fmt.Println("Contract address:", address.Hex())
+	fmt.Printf("Contract address: %v\n", address.Hex())
+	// fmt.Println(tx.Hash().Hex())
+	fmt.Printf("tx hash: %v\n", tx.Hash().Hex())
 }
