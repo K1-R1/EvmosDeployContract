@@ -26,17 +26,4 @@
 - Generate Geth bindings (with abigen --abi ./contract/build/Token.abi --pkg token --type Token --out ./scripts/token/token.go --bin ./contract/build/Token.bin)
 - Create deploy file, deploy (with go run scripts/deploy/deploy.go $(evmosd keys unsafe-export-eth-key mykey --keyring-backend=test))
 
-3. Write a client-side program to query and transfer token balances on the deployed smart contract
-
-- build basic query_and_transfer.go file✅
-- build basic .sh file to run deploy + query_and_transfer✅
-
-- improve deploy and query with util
-- improve .sh
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-go: to add module requirements and sums:
-go mod tidy
-
-!!!!!!
-clean out go.mod, and redo tidy
+3. Write a client-side program to query and transfer token balances on the deployed smart contract✅

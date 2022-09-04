@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"math"
 	"math/big"
 	"os"
 	"time"
@@ -16,103 +15,111 @@ import (
 )
 
 func main() {
-	//get client
+	// Get client for local node
 	client, err := util.GetClient()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get client: %v", err)
 	}
 
-	// 1. contractAddress
+	// Get deployed Token contract address, from Args
 	contractAddress := common.HexToAddress(os.Args[1])
 
-	//2. Deployer private key and address
+	// Get deployer's private key and address, from Args
 	deployerPrivateKey, deployerAddress, err := util.GetPKAndAddress(os.Args[2])
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get private key and address: %v", err)
 	}
 
-	//3. Receiver address
+	// Get deployer's auth
+	auth, err := util.GetAuth(client, deployerPrivateKey, deployerAddress)
+	if err != nil {
+		log.Fatalf("Failed to get auth: %v", err)
+	}
+
+	// Get receiver's address, from Args
 	_, receiverAddress, err := util.GetPKAndAddress(os.Args[3])
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get private key and address: %v", err)
 	}
 
 	// Get instance of Token contract
 	instance, err := token.NewToken(contractAddress, client)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get contract insstance: %v", err)
 	}
 
-	// Check starting balance of deployer
+	// Check Starting balances
+	// Of deployer
 	deployerBalance, err := instance.BalanceOf(&bind.CallOpts{}, deployerAddress)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get token balance: %v", err)
 	}
-	// Check starting balance of receiver
+	// Of receiver
 	receiverBalance, err := instance.BalanceOf(&bind.CallOpts{}, receiverAddress)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get token balance: %v", err)
 	}
 
-	//Transfer 10 tokens from deployer to reciever
-	//get auth
-	auth, err := util.GetAuth(client, deployerPrivateKey, deployerAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//set amount
+	// Transfer 10 tokens from deployer to reciever
+	// Set amount of tokens to be transferred;
+	// as 10 with 18 decimals, as per Token contract
 	transferAmount, ok := new(big.Int).SetString("10000000000000000000", 10)
 	if !ok {
-		log.Fatal(err)
+		log.Fatalf("Failed to set transferAmount: %v", err)
 	}
 
-	// Transfer tokens from deployer address to receiver address
+	// Transfer tokens from deployer to receiver address
 	tx, err := instance.Transfer(auth, receiverAddress, transferAmount)
-	if err != nil {
-		log.Fatal(err)
-	}
 	_ = tx
+	if err != nil {
+		log.Fatalf("Failed to transfer tokens: %v", err)
+	}
+
+	// Wait for tx to be executed
 	time.Sleep(5 * time.Second)
 
-	//check end balances
-	// Check end balance of deployer
+	// Check end balances
+	// Of deployer
 	deployerBalanceAfter, err := instance.BalanceOf(&bind.CallOpts{}, deployerAddress)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get token balance: %v", err)
 	}
-	// Check end balance of receiver
+	// Of receiver
 	receiverBalanceAfter, err := instance.BalanceOf(&bind.CallOpts{}, receiverAddress)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get token balance: %v", err)
 	}
 
-	//display values
+	// Display
+	// Get contract name
+	name, err := instance.Name(&bind.CallOpts{})
+	if err != nil {
+		log.Fatalf("Failed to get contract name: %v", err)
+	}
+	// Get contract symbol
+	symbol, err := instance.Symbol(&bind.CallOpts{})
+	if err != nil {
+		log.Fatalf("Failed to get contract symbol: %v", err)
+	}
+	// Get contract decimals
 	decimals, err := instance.Decimals(&bind.CallOpts{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get contract decimals: %v", err)
 	}
-	//before
-	//Display token balance
-	fbal := new(big.Float)
-	fbal.SetString(deployerBalance.String())
-	value := new(big.Float).Quo(fbal, big.NewFloat(math.Pow10(int(decimals))))
-	fmt.Printf("deployer balance before: %f\n", value)
-	//
-	fbal = new(big.Float)
-	fbal.SetString(receiverBalance.String())
-	value = new(big.Float).Quo(fbal, big.NewFloat(math.Pow10(int(decimals))))
-	fmt.Printf("receiver balance before: %f\n", value)
-	//tx
-	fmt.Printf("Transferred 10 tokens from contract deployer(%v) to receiver(%v) in transaction: %v\n", deployerAddress, receiverAddress, tx.Hash().Hex())
-	//after
-	fbal = new(big.Float)
-	fbal.SetString(deployerBalanceAfter.String())
-	value = new(big.Float).Quo(fbal, big.NewFloat(math.Pow10(int(decimals))))
-	fmt.Printf("deployer balance after: %f\n", value)
 
-	fbal = new(big.Float)
-	fbal.SetString(receiverBalanceAfter.String())
-	value = new(big.Float).Quo(fbal, big.NewFloat(math.Pow10(int(decimals))))
-	fmt.Printf("receiver balance after: %f\n", value)
+	fmt.Println("\n\nQuery and transfer tokens\n---------------------------------------------")
+	fmt.Printf("Token name: %v    Token symbol: %v\n", name, symbol)
+	fmt.Printf("Starting balances:\n")
+	fmt.Printf("                  Address                    |              %v balance           \n", symbol)
+	fmt.Printf("---------------------------------------------|---------------------------------------------\n")
+	fmt.Printf("%v   | %v\n", deployerAddress, util.GetReadableBalance(deployerBalance, decimals))
+	fmt.Printf("%v   | %v\n", receiverAddress, util.GetReadableBalance(receiverBalance, decimals))
+
+	fmt.Printf("\n\nTransfer:\n10 %v transferred from contract deployer(%v),\nto receiver(%v),\nin transaction: %v\n", symbol, deployerAddress, receiverAddress, tx.Hash().Hex())
+
+	fmt.Printf("\n\nEnding balances:\n")
+	fmt.Printf("                  Address                    |              %v balance           \n", symbol)
+	fmt.Printf("---------------------------------------------|---------------------------------------------\n")
+	fmt.Printf("%v   | %v\n", deployerAddress, util.GetReadableBalance(deployerBalanceAfter, decimals))
+	fmt.Printf("%v   | %v\n\n", receiverAddress, util.GetReadableBalance(receiverBalanceAfter, decimals))
 }

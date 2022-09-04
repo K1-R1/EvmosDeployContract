@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"crypto/ecdsa"
+	"math"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -11,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+// Get client for Local node
 func GetClient() (*ethclient.Client, error) {
 	client, err := ethclient.Dial("http://localhost:8545")
 	if err != nil {
@@ -19,7 +21,7 @@ func GetClient() (*ethclient.Client, error) {
 	return client, err
 }
 
-// Derive PK and address from Args
+// Derive Private key and address from Args
 func GetPKAndAddress(hexkey string) (*ecdsa.PrivateKey, common.Address, error) {
 	privateKey, err := crypto.HexToECDSA(hexkey)
 	if err != nil {
@@ -36,7 +38,7 @@ func GetPKAndAddress(hexkey string) (*ecdsa.PrivateKey, common.Address, error) {
 	return privateKey, address, nil
 }
 
-// get auth
+// Get auth for a specific private key
 func GetAuth(client *ethclient.Client, pk *ecdsa.PrivateKey, address common.Address) (*bind.TransactOpts, error) {
 
 	nonce, err := client.PendingNonceAt(context.Background(), address)
@@ -60,11 +62,17 @@ func GetAuth(client *ethclient.Client, pk *ecdsa.PrivateKey, address common.Addr
 	}
 
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)      // in wei
-	auth.GasLimit = uint64(3000000) // in units
+	auth.Value = big.NewInt(0)
+	auth.GasLimit = uint64(3000000)
 	auth.GasPrice = gasPrice
 
 	return auth, nil
 }
 
-//Display token balance
+// Get human-readable value of Token balance, with correct decimals
+func GetReadableBalance(balance *big.Int, decimals uint8) *big.Float {
+	bal := new(big.Float)
+	bal.SetString(balance.String())
+	value := new(big.Float).Quo(bal, big.NewFloat(math.Pow10(int(decimals))))
+	return value
+}
