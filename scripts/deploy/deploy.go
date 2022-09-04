@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/ecdsa"
 	"fmt"
 	"log"
 	"math/big"
@@ -12,7 +11,6 @@ import (
 	util "github.com/K1-R1/EvmosDeployContract/scripts/utils"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 func main() {
@@ -21,19 +19,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	privateKey, err := crypto.HexToECDSA(os.Args[1])
+	//Derive PK and address from Args
+	deployerPrivateKey, deployerAddress, err := util.GetPKAndAddress(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-	}
-
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	//
+	//get auth
+	nonce, err := client.PendingNonceAt(context.Background(), deployerAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 	// Create transaction signer
-	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	auth, err := bind.NewKeyedTransactorWithChainID(deployerPrivateKey, chainID)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,6 +52,7 @@ func main() {
 	auth.Value = big.NewInt(0)      // in wei
 	auth.GasLimit = uint64(3000000) // in units
 	auth.GasPrice = gasPrice
+	//
 
 	address, tx, _, err := token.DeployToken(auth, client)
 	if err != nil {
@@ -65,6 +60,7 @@ func main() {
 	}
 
 	// fmt.Println("Contract address:", address.Hex())
+	//deployer address
 	fmt.Printf("Contract address: %v\n", address.Hex())
 	// fmt.Println(tx.Hash().Hex())
 	fmt.Printf("tx hash: %v\n", tx.Hash().Hex())
