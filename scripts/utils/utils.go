@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"crypto/ecdsa"
+	"errors"
 	"math"
 	"math/big"
 
@@ -40,6 +41,10 @@ func GetPKAndAddress(hexkey string) (*ecdsa.PrivateKey, common.Address, error) {
 
 // Get auth for a specific private key
 func GetAuth(client *ethclient.Client, pk *ecdsa.PrivateKey, address common.Address) (*bind.TransactOpts, error) {
+
+	if address == common.HexToAddress("0x0") {
+		return nil, errors.New("Invalid address")
+	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), address)
 	if err != nil {

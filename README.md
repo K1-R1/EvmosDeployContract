@@ -27,3 +27,7 @@
 - Create deploy file, deploy (with go run scripts/deploy/deploy.go $(evmosd keys unsafe-export-eth-key mykey --keyring-backend=test))
 
 3. Write a client-side program to query and transfer token balances on the deployed smart contract✅
+
+4. Write tests
+
+delete go.mod reqs, redo tidy.
