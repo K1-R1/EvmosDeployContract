@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"math"
@@ -57,32 +56,10 @@ func main() {
 
 	//Transfer 10 tokens from deployer to reciever
 	//get auth
-	//setup auth for deployer
-	nonce, err := client.PendingNonceAt(context.Background(), deployerAddress)
+	auth, err := util.GetAuth(client, deployerPrivateKey, deployerAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	chainID, err := client.ChainID(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	auth, err := bind.NewKeyedTransactorWithChainID(deployerPrivateKey, chainID)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)      // in wei
-	auth.GasLimit = uint64(3000000) // in units
-	auth.GasPrice = gasPrice
-	//
 
 	//set amount
 	transferAmount, ok := new(big.Int).SetString("10000000000000000000", 10)

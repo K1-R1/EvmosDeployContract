@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"context"
 	"crypto/ecdsa"
-	"log"
+	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -12,7 +14,7 @@ import (
 func GetClient() (*ethclient.Client, error) {
 	client, err := ethclient.Dial("http://localhost:8545")
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	return client, err
 }
@@ -34,6 +36,35 @@ func GetPKAndAddress(hexkey string) (*ecdsa.PrivateKey, common.Address, error) {
 	return privateKey, address, nil
 }
 
-//get auth
+// get auth
+func GetAuth(client *ethclient.Client, pk *ecdsa.PrivateKey, address common.Address) (*bind.TransactOpts, error) {
+
+	nonce, err := client.PendingNonceAt(context.Background(), address)
+	if err != nil {
+		return nil, err
+	}
+
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	chainID, err := client.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := bind.NewKeyedTransactorWithChainID(pk, chainID)
+	if err != nil {
+		return nil, err
+	}
+
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)      // in wei
+	auth.GasLimit = uint64(3000000) // in units
+	auth.GasPrice = gasPrice
+
+	return auth, nil
+}
 
 //Display token balance
