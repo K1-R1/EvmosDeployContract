@@ -1,3 +1,7 @@
+/** utils_test.go contains TDD ( Test Driven Development ) style tests for the scripts/utils/utils.go
+  script. It utilise Golang's built-in "testing" package.
+*/
+
 package tests
 
 import (
@@ -28,7 +32,8 @@ func TestGetClient(t *testing.T) {
 	require.Equal(t, big.NewInt(9000), chainID, "Incorrect chain ID")
 }
 
-// GetPKAndAddress
+// Test GetPKAndAddress
+// Checks that private keys and addresses are only derived with valid inputs
 func TestGetPKAndAddress(t *testing.T) {
 	testcases := []struct {
 		name   string
@@ -54,7 +59,8 @@ func TestGetPKAndAddress(t *testing.T) {
 	}
 }
 
-// GetAuth
+// Test GetAuth
+// Checks that valid transaction options are only generated with valid inputs
 func TestGetAuth(t *testing.T) {
 	privKeys, addresses, err := testUtil.GeneratePrivKeysAndAddresses(1)
 	require.NoError(t, err, "Error generating private key and address")

@@ -1,3 +1,10 @@
+/** deploy.go deploys the Token contract tp
+    a local evmos node.
+    It utilises the Go-ethereum contract binding script:
+	scripts/token/token.go
+    When called, it requires the hex private key of the deployer.
+*/
+
 package main
 
 import (
@@ -16,7 +23,7 @@ func main() {
 		log.Fatalf("Failed to get client: %v", err)
 	}
 
-	// Derive Private key and address from Args
+	// Derive Private key and address from input arguments
 	deployerPrivateKey, deployerAddress, err := util.GetPKAndAddress(os.Args[1])
 	if err != nil {
 		log.Fatalf("Failed to get private key and address: %v", err)
@@ -34,7 +41,7 @@ func main() {
 		log.Fatalf("Failed to deploy contract: %v", err)
 	}
 
-	//Display
+	// Display info
 	fmt.Println("\n\nDeployed Contract\n---------------------------------------------")
 	fmt.Printf("Deployed contract address: %v\n", address.Hex())
 	fmt.Printf("Deployed by account with address: %v\n", deployerAddress)

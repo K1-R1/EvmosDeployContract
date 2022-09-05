@@ -118,6 +118,7 @@ if [[ $1 == "pending" ]]; then
   echo "pending mode is on, please wait for the first block committed."
 fi
 
+# Add second account
 evmosd keys add $KEY2 --keyring-backend $KEYRING --algo $KEYALGO
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)

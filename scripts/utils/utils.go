@@ -1,3 +1,7 @@
+/** utils.go contains helper functions to be used in deploy.go and
+  query_and_transfer.go
+*/
+
 package utils
 
 import (
@@ -13,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// Get client for Local node
+// GetClient retrieves and returns an ethClient for the local evmos node
 func GetClient() (*ethclient.Client, error) {
 	client, err := ethclient.Dial("http://localhost:8545")
 	if err != nil {
@@ -22,7 +26,8 @@ func GetClient() (*ethclient.Client, error) {
 	return client, err
 }
 
-// Derive Private key and address from Args
+// GetPKAndAddress derives and returns an ecsda private key and associated address,
+// from a hexkey from os.Args
 func GetPKAndAddress(hexkey string) (*ecdsa.PrivateKey, common.Address, error) {
 	privateKey, err := crypto.HexToECDSA(hexkey)
 	if err != nil {
@@ -39,9 +44,11 @@ func GetPKAndAddress(hexkey string) (*ecdsa.PrivateKey, common.Address, error) {
 	return privateKey, address, nil
 }
 
-// Get auth for a specific private key
+// GetAuth derives the transaction options for a given primary key and associated address,
+// with a default set of values
 func GetAuth(client *ethclient.Client, pk *ecdsa.PrivateKey, address common.Address) (*bind.TransactOpts, error) {
 
+	// Check for invalid address
 	if address == common.HexToAddress("0x0") {
 		return nil, errors.New("Invalid address")
 	}
@@ -74,7 +81,8 @@ func GetAuth(client *ethclient.Client, pk *ecdsa.PrivateKey, address common.Addr
 	return auth, nil
 }
 
-// Get human-readable value of Token balance, with correct decimals
+// GetReadableBalance takes the ERC20 contract balance of an account, and reformatts the balance with the correct
+// decimal places from the contract's decimals variable
 func GetReadableBalance(balance *big.Int, decimals uint8) *big.Float {
 	bal := new(big.Float)
 	bal.SetString(balance.String())

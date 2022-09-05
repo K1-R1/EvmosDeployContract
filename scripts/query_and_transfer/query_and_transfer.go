@@ -1,3 +1,14 @@
+/** query_and_transfer.go checks the starting balances of two
+    accounts, with the first being the deployer of the TOK contract.
+	Then transfers 10 TOK from the account that deployed the TOK contract,
+	to a receieving account. Finally, it checks the final TOK balances of the
+	accounts.
+    It utilises the Go-ethereum contract binding script:
+	scripts/token/token.go
+    When called, it requires the TOK contract address, deployer's private key
+	and the private key of a receiving account.
+*/
+
 package main
 
 import (
@@ -21,10 +32,10 @@ func main() {
 		log.Fatalf("Failed to get client: %v", err)
 	}
 
-	// Get deployed Token contract address, from Args
+	// Get deployed Token contract address from input arguments
 	contractAddress := common.HexToAddress(os.Args[1])
 
-	// Get deployer's private key and address, from Args
+	// Get deployer's private key and address from input arguments
 	deployerPrivateKey, deployerAddress, err := util.GetPKAndAddress(os.Args[2])
 	if err != nil {
 		log.Fatalf("Failed to get private key and address: %v", err)
@@ -36,7 +47,7 @@ func main() {
 		log.Fatalf("Failed to get auth: %v", err)
 	}
 
-	// Get receiver's address, from Args
+	// Get receiver's address from input arguments
 	_, receiverAddress, err := util.GetPKAndAddress(os.Args[3])
 	if err != nil {
 		log.Fatalf("Failed to get private key and address: %v", err)
@@ -48,7 +59,7 @@ func main() {
 		log.Fatalf("Failed to get contract insstance: %v", err)
 	}
 
-	// Check Starting balances
+	// Check Starting balances.
 	// Of deployer
 	deployerBalance, err := instance.BalanceOf(&bind.CallOpts{}, deployerAddress)
 	if err != nil {
@@ -60,7 +71,7 @@ func main() {
 		log.Fatalf("Failed to get token balance: %v", err)
 	}
 
-	// Transfer 10 tokens from deployer to reciever
+	// Transfer 10 tokens from deployer to reciever.
 	// Set amount of tokens to be transferred;
 	// as 10 with 18 decimals, as per Token contract
 	transferAmount, ok := new(big.Int).SetString("10000000000000000000", 10)
@@ -78,7 +89,7 @@ func main() {
 	// Wait for tx to be executed
 	time.Sleep(5 * time.Second)
 
-	// Check end balances
+	// Check end balances.
 	// Of deployer
 	deployerBalanceAfter, err := instance.BalanceOf(&bind.CallOpts{}, deployerAddress)
 	if err != nil {

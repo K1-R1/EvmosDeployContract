@@ -1,3 +1,7 @@
+/** test_utils.go contains helper functions for testing.
+  Primarily for BDD testing of the Token contract in a simulated backend
+*/
+
 package testUtil
 
 import (
@@ -41,7 +45,7 @@ type ReceiptBackend interface {
 	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
 }
 
-// DeployContractAndCommit deploys an instance of the ERC20 token contract
+// DeployContractAndCommit deploys an instance of the ERC20 Token contract
 // and commits the transaction to the simulated backend.
 // The function returns the contract address, the transaction, and an
 // instance of the contract binding.
@@ -84,9 +88,6 @@ func FillTransactionSignerFields(auth *bind.TransactOpts, client *ethclient.Clie
 	}
 
 	// Fill transaction signer fields
-	// auth.GasLimit = 18446744073709551615 // max value for uint64
-	// auth.GasLimit = 10000000000
-	// auth.GasLimit = 11903790 // value worked
 	auth.GasLimit = gasLimit
 	auth.GasPrice = gasPrice
 	auth.Nonce = big.NewInt(int64(nonce))
