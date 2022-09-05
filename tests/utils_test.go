@@ -98,5 +98,3 @@ func TestGetAuth(t *testing.T) {
 		})
 	}
 }
-
-//GetReadableBalance
